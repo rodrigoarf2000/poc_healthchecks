@@ -1,0 +1,1 @@
+Scaffold-DbContext -Connection name=DefaultConnection -OutputDir Entities -ContextDir Contexts Microsoft.EntityFrameworkCore.SqlServer -Context BookContext -Project FastCore.Repositories -StartupProject FastCore.Api -Force
