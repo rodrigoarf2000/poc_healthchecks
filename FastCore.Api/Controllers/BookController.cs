@@ -60,12 +60,22 @@ namespace FastCore.Api.Controllers
         }
 
         /// <summary>
-        /// Obtem um livro específico.
+        /// Obtem um livro específico pelo id.
         /// </summary>
         [HttpGet("{bookId}")]
         public async Task<IActionResult> GetItemAsyncAsync([FromBody] int bookId)
         {
             var result = await _bookApplication.GetItemAsync(bookId);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Obtem um livro específico pelo codigo de isbn.
+        /// </summary>
+        [HttpGet("{isbn}")]
+        public async Task<IActionResult> GetItemAsyncAsync([FromBody] string isbn)
+        {
+            var result = await _bookApplication.GetItemByIsbnAsync(isbn);
             return Ok(result);
         }
     }

@@ -13,9 +13,12 @@ namespace FastCore.Repositories
     public interface ICategoryRepository
     {
         Task AddAsync(Category entity);
+        Task<Category> AddAndGetItemAsync(Category entity);
         Task UpdateAsync(Category entity);
+        Task<Category> UpdateAndGetItemAsync(Category entity);
         Task DeleteAsync(Expression<Func<Category, bool>> predicate);
         Task<Category> GetItemAsync(int bookId);
+        Task<Category> GetItemByFiltersAsync(Expression<Func<Category, bool>> predicate);
         Task<List<Category>> GetAllAsync();
     }
 
@@ -23,12 +26,32 @@ namespace FastCore.Repositories
     {
         private readonly BookContext _context;
 
+        public CategoryRepository(BookContext context)
+        {
+            _context = context;
+        }
+
         public async Task AddAsync(Category entity)
         {
             try
             {
                 _context.Set<Category>().Add(entity);
                 await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<Category> AddAndGetItemAsync(Category entity)
+        {
+            try
+            {
+                _context.Set<Category>().Add(entity);
+                await _context.SaveChangesAsync();
+                var item = _context.Set<Category>().Where(x => x.CategoryId == entity.CategoryId).FirstOrDefault();
+                return item;
             }
             catch (Exception ex)
             {
@@ -90,6 +113,35 @@ namespace FastCore.Repositories
             {
                 _context.Update(entity);
                 await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<Category> UpdateAndGetItemAsync(Category entity)
+        {
+            try
+            {
+                _context.Set<Category>().Add(entity);
+                await _context.SaveChangesAsync();
+                var item = _context.Set<Category>().Where(x => x.CategoryId == entity.CategoryId).FirstOrDefault();
+                return item;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public Task<Category> GetItemByFiltersAsync(Expression<Func<Category, bool>> predicate)
+        {
+            try
+            {
+                var collection = _context.Set<Category>().AsNoTracking().Where(predicate).ToList();
+                var result = collection.FirstOrDefault();
+                return Task.FromResult(result);
             }
             catch (Exception ex)
             {

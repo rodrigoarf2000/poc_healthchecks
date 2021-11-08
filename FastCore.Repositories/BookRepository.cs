@@ -10,24 +10,32 @@ using System.Threading.Tasks;
 
 namespace FastCore.Repositories
 {
-    public interface IAuthorRepository
+    public interface IBookRepository
     {
-        Task AddAsync(Author entity);
-        Task UpdateAsync(Author entity);
-        Task DeleteAsync(Expression<Func<Author, bool>> predicate);
-        Task<Author> GetItemAsync(int bookId);
-        Task<List<Author>> GetAllAsync();
+        Task AddAsync(Book entity);
+        Task<Book> AddAndGetItemAsync(Book entity);
+        Task UpdateAsync(Book entity);
+        Task<Book> UpdateAndGetItemAsync(Book entity);
+        Task DeleteAsync(Expression<Func<Book, bool>> predicate);
+        Task<Book> GetItemAsync(int bookId);
+        Task<Book> GetItemByFiltersAsync(Expression<Func<Book, bool>> predicate);
+        Task<List<Book>> GetAllAsync();
     }
 
-    public class AuthorRepository : IAuthorRepository
+    public class BookRepository : IBookRepository
     {
         private readonly BookContext _context;
 
-        public async Task AddAsync(Author entity)
+        public BookRepository(BookContext context)
+        {
+            _context = context;
+        }
+
+        public async Task AddAsync(Book entity)
         {
             try
             {
-                _context.Set<Author>().Add(entity);
+                _context.Set<Book>().Add(entity);
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -36,17 +44,32 @@ namespace FastCore.Repositories
             }
         }
 
-        public async Task DeleteAsync(Expression<Func<Author, bool>> predicate)
+        public async Task<Book> AddAndGetItemAsync(Book entity)
         {
             try
             {
-                var collection = _context.Set<Author>().AsNoTracking().Where(predicate).ToList();
+                _context.Set<Book>().Add(entity);
+                await _context.SaveChangesAsync();
+                var item = _context.Set<Book>().Where(x => x.Isbn == entity.Isbn).FirstOrDefault();
+                return item;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task DeleteAsync(Expression<Func<Book, bool>> predicate)
+        {
+            try
+            {
+                var collection = _context.Set<Book>().AsNoTracking().Where(predicate).ToList();
 
                 if (collection.Any())
                 {
                     foreach (var item in collection)
                     {
-                        _context.Set<Author>().Remove(item);
+                        _context.Set<Book>().Remove(item);
                     }
 
                     await _context.SaveChangesAsync();
@@ -58,11 +81,11 @@ namespace FastCore.Repositories
             }
         }
 
-        public async Task<List<Author>> GetAllAsync()
+        public async Task<List<Book>> GetAllAsync()
         {
             try
             {
-                var collection = await Task.FromResult(_context.Set<Author>().ToList());
+                var collection = await Task.FromResult(_context.Set<Book>().ToList());
                 return collection;
             }
             catch (Exception ex)
@@ -71,11 +94,11 @@ namespace FastCore.Repositories
             }
         }
 
-        public async Task<Author> GetItemAsync(int bookId)
+        public async Task<Book> GetItemAsync(int bookId)
         {
             try
             {
-                var entity = await Task.FromResult(_context.Set<Author>().Where(x => x.AuthorId == bookId).FirstOrDefault());
+                var entity = await Task.FromResult(_context.Set<Book>().Where(x => x.BookId == bookId).FirstOrDefault());
                 return entity;
             }
             catch (Exception ex)
@@ -84,12 +107,41 @@ namespace FastCore.Repositories
             }
         }
 
-        public async Task UpdateAsync(Author entity)
+        public async Task UpdateAsync(Book entity)
         {
             try
             {
                 _context.Update(entity);
                 await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<Book> UpdateAndGetItemAsync(Book entity)
+        {
+            try
+            {
+                _context.Set<Book>().Add(entity);
+                await _context.SaveChangesAsync();
+                var item = _context.Set<Book>().Where(x => x.Isbn == entity.Isbn).FirstOrDefault();
+                return item;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public Task<Book> GetItemByFiltersAsync(Expression<Func<Book, bool>> predicate)
+        {
+            try
+            {
+                var collection = _context.Set<Book>().AsNoTracking().Where(predicate).ToList();
+                var result = collection.FirstOrDefault();
+                return Task.FromResult(result);
             }
             catch (Exception ex)
             {

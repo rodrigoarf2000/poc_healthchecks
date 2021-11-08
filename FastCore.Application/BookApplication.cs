@@ -16,6 +16,7 @@ namespace FastCore.Application
         Task DeleteAsync(BookVm model);
         Task<BookVm> GetItemAsync(int bookId);
         Task<List<BookVm>> GetAllAsync();
+        Task<BookVm> GetItemByIsbnAsync(string isbn);
     }
 
     public class BookApplication : IBookApplication
@@ -49,6 +50,13 @@ namespace FastCore.Application
         public async Task<BookVm> GetItemAsync(int bookId)
         {
             var entity = await _bookRepository.GetItemAsync(bookId);
+            var result = entity.ToViewModel<Book, BookVm>();
+            return result;
+        }
+
+        public async Task<BookVm> GetItemByIsbnAsync(string isbn)
+        {
+            var entity = await _bookRepository.GetItemByFiltersAsync(x => x.Isbn == isbn);
             var result = entity.ToViewModel<Book, BookVm>();
             return result;
         }
